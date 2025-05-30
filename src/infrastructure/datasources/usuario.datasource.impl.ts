@@ -18,6 +18,8 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
     ) {}
 
     async criar(criarUsuarioDto: CriarUsuarioDto, tenantId: string, userId: string): Promise<UsuarioEntity> {
+        console.log('criarUsuarioDto: ', criarUsuarioDto);
+        
         try {
             // Definir permissões padrão baseadas no papel
             const permissoesPadrao = this.obterPermissoesPorPapel(criarUsuarioDto.papel);
@@ -38,6 +40,8 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
             const usuarioPopulado = await UsuarioModel.findById(usuario._id).populate('pessoa_id');
             return UsuarioMapper.usuarioEntityFromObjectSemSenha(usuarioPopulado!);
         } catch (error: any) {
+            console.log('error ===> ', error);
+            
             if (error.code === 11000) {
                 if (error.keyPattern.usuario) {
                     throw CustomError.badRequest('Nome de usuário já existe neste município');

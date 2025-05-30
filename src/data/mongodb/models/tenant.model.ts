@@ -239,8 +239,6 @@ tenantSchema.pre('findOneAndUpdate', function(next) {
 });
 
 // Índices para performance
-tenantSchema.index({ codigo: 1 });
-tenantSchema.index({ subdomain: 1 });
 tenantSchema.index({ cnpj: 1 });
 tenantSchema.index({ status: 1 });
 tenantSchema.index({ 'plano.tipo': 1 });

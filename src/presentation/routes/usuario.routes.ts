@@ -5,8 +5,8 @@ import { UsuarioRepositoryImpl } from "../../infrastructure/repositories/usuario
 import { UsuarioDatasourceImpl } from "../../infrastructure/datasources/usuario.datasource.impl";
 import { PessoaRepositoryImpl } from "../../infrastructure/repositories/pessoa.repository.impl";
 import { PessoaDatasourceImpl } from "../../infrastructure/datasources/pessoa.datasource.impl";
-import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
+import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { PermissionMiddleware } from "../middlewares/permission.middleware";
 
 export class UsuarioRoutes {
@@ -29,11 +29,11 @@ export class UsuarioRoutes {
         router.post('/login', controller.loginUsuario);
 
         // Aplicar middleware de autenticação para as demais rotas
-        router.use(AuthMiddleware.validateJWT);
+        //router.use(AuthMiddleware.validateJWT);
 
         // Rotas autenticadas
         router.post('/', 
-            PermissionMiddleware.checkPermissions(['GERENCIAR_USUARIOS']),
+            //PermissionMiddleware.checkPermissions(['GERENCIAR_USUARIOS']),
             controller.criarUsuario
         );
         
