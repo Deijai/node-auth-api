@@ -48,6 +48,62 @@ export class ConsultaRoutes {
 
         // Rotas
         router.post('/', 
+            PermissionMiddleware.checkPermissions(['REALIZAR_ATENDIMENTO']),
+            controller.criarConsulta
+        );
+        
+        router.get('/', 
+            PermissionMiddleware.checkPermissions(['VISUALIZAR_PACIENTE', 'REALIZAR_ATENDIMENTO']),
+            controller.buscarConsultas
+        );
+        
+        router.get('/estatisticas/:unidadeId', 
+            PermissionMiddleware.checkPermissions(['GERAR_RELATORIOS']),
+            controller.obterEstatisticas
+        );
+        
+        router.get('/disponibilidade', 
+            PermissionMiddleware.checkPermissions(['AGENDAR_CONSULTA']),
+            controller.verificarDisponibilidade
+        );
+        
+        router.get('/paciente/:pacienteId', 
+            PermissionMiddleware.checkPermissions(['VISUALIZAR_PACIENTE']),
+            controller.buscarConsultasPorPaciente
+        );
+        
+        router.get('/medico/:medicoId/agenda', 
+            PermissionMiddleware.checkPermissions(['VISUALIZAR_AGENDA']),
+            controller.buscarAgendaMedico
+        );
+        
+        router.get('/unidade/:unidadeId/agenda', 
+            PermissionMiddleware.checkPermissions(['VISUALIZAR_AGENDA']),
+            controller.buscarAgendaUnidade
+        );
+        
+        router.get('/:id', 
+            PermissionMiddleware.checkPermissions(['VISUALIZAR_PACIENTE']),
+            controller.buscarConsultaPorId
+        );
+        
+        router.put('/:id/iniciar', 
+            PermissionMiddleware.checkPermissions(['REALIZAR_ATENDIMENTO']),
+            controller.iniciarAtendimento
+        );
+        
+        router.put('/:id/finalizar', 
+            PermissionMiddleware.checkPermissions(['REALIZAR_ATENDIMENTO']),
+            controller.finalizarConsulta
+        );
+        
+        router.put('/:id/cancelar', 
+            PermissionMiddleware.checkPermissions(['CANCELAR_CONSULTA']),
+            controller.cancelarConsulta
+        );
+        
+        router.put('/:id/nao-compareceu', 
+            PermissionMiddleware.checkPermissions(['REALIZAR_ATENDIMENTO']),
             controller.marcarNaoCompareceu
         );
 
