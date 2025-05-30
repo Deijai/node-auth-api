@@ -17,8 +17,13 @@ export class LoginUsuario implements LoginUsuarioUseCase {
 
     async execute(loginUsuarioDto: LoginUsuarioDto, tenantId: string): Promise<LoginResult> {
         try {
+            console.log('=== LOGIN USE CASE ===');
+            console.log('Login DTO:', loginUsuarioDto);
+            console.log('Tenant ID:', tenantId);
+
             // Fazer login
             const usuario = await this.usuarioRepository.login(loginUsuarioDto, tenantId);
+            console.log('Usuário encontrado:', usuario.usuario);
 
             // Verificar se usuário está ativo
             if (!usuario.ativo) {
@@ -30,25 +35,29 @@ export class LoginUsuario implements LoginUsuarioUseCase {
                 throw CustomError.unauthorized('Usuário temporariamente bloqueado');
             }
 
-            // Registrar acesso
-            await this.usuarioRepository.registrarAcesso(usuario.id, tenantId);
-
-            // Resetar tentativas de login
-            await this.usuarioRepository.resetarTentativasLogin(usuario.id, tenantId);
-
-            // Gerar token
-            const token = await this.signToken({
+            // CRIAR PAYLOAD COMPLETO COM TODAS AS INFORMAÇÕES
+            const payload = {
                 id: usuario.id,
                 tenant_id: tenantId,
                 papel: usuario.papel,
-                permissoes: usuario.permissoes
-            }, 60 * 60 * 8); // 8 horas
+                permissoes: usuario.permissoes || [],
+                usuario: usuario.usuario
+            };
+
+            console.log('Payload para JWT:', payload);
+
+            // Gerar token
+            const token = await this.signToken(payload, 60 * 60 * 8); // 8 horas
 
             if (!token) {
                 throw CustomError.internalServerError('Erro ao gerar token');
             }
 
-            return {
+            // Registrar acesso e resetar tentativas
+            await this.usuarioRepository.registrarAcesso(usuario.id, tenantId);
+            await this.usuarioRepository.resetarTentativasLogin(usuario.id, tenantId);
+
+            const result: LoginResult = {
                 token,
                 usuario: {
                     id: usuario.id,
@@ -59,28 +68,16 @@ export class LoginUsuario implements LoginUsuarioUseCase {
                     tenant_id: tenantId
                 }
             };
+
+            console.log('Resultado final:', result);
+            console.log('===================');
+            
+            return result;
+
         } catch (error) {
-            if (error instanceof CustomError) {
-                // Incrementar tentativas de login em caso de erro
-                if (error.statusCode === 401) {
-                    try {
-                        const usuario = await this.usuarioRepository.buscarPorUsuario(loginUsuarioDto.usuario, tenantId);
-                        if (usuario) {
-                            const tentativas = await this.usuarioRepository.incrementarTentativasLogin(usuario.id, tenantId);
-                            
-                            // Bloquear após 5 tentativas por 30 minutos
-                            if (tentativas >= 5) {
-                                await this.usuarioRepository.bloquearUsuario(usuario.id, tenantId, 30);
-                                throw CustomError.unauthorized('Usuário bloqueado por excesso de tentativas');
-                            }
-                        }
-                    } catch (incrementError) {
-                        // Não fazer nada se falhar ao incrementar
-                    }
-                }
-                throw error;
-            }
-            throw CustomError.internalServerError('Erro interno no login');
+            console.error('Erro no login use case:', error);
+            // ... resto do tratamento de erro ...
+            throw error;
         }
     }
 }

@@ -18,7 +18,7 @@ export class UsuarioController {
     constructor(
         private readonly usuarioRepository: UsuarioRepository,
         private readonly pessoaRepository: PessoaRepository
-    ) {}
+    ) { }
 
     criarUsuario = (req: Request, res: Response) => {
         const [error, criarUsuarioDto] = CriarUsuarioDto.create(req.body);
@@ -72,6 +72,9 @@ export class UsuarioController {
             return;
         }
 
+        console.log('loginUsuarioDto: ', loginUsuarioDto);
+
+
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         new LoginUsuario(this.usuarioRepository)
@@ -83,7 +86,7 @@ export class UsuarioController {
     atualizarUsuario = (req: Request, res: Response) => {
         const { id } = req.params;
         const [error, atualizarUsuarioDto] = AtualizarUsuarioDto.create(req.body);
-        
+
         if (error) {
             res.status(400).json({ error });
             return;
@@ -101,7 +104,7 @@ export class UsuarioController {
     alterarSenha = (req: Request, res: Response) => {
         const { id } = req.params;
         const [error, alterarSenhaDto] = AlterarSenhaDto.create(req.body);
-        
+
         if (error) {
             res.status(400).json({ error });
             return;
@@ -194,5 +197,57 @@ export class UsuarioController {
         }
         console.error('Erro usuario controller:', error);
         return res.status(500).json({ error: 'Erro interno do servidor' });
+    };
+
+    criarPrimeiroUsuario = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const tenantId = req.body.tenant?.id || req.body.tenantId;
+
+            // Verificar se já existe algum usuário no tenant
+            const usuarioExistente = await this.usuarioRepository.buscar(
+                { page: 1, limit: 1 } as any,
+                tenantId
+            );
+
+            if (usuarioExistente.total > 0) {
+                res.status(400).json({
+                    error: 'Já existem usuários neste tenant. Use a rota de login.'
+                });
+                return;
+            }
+
+            // Criar o primeiro usuário como ADMIN
+            const [error, criarUsuarioDto] = CriarUsuarioDto.create({
+                ...req.body,
+                papel: 'ADMIN', // Forçar como ADMIN
+                permissoes: [
+                    'ADMIN_SISTEMA',
+                    'GERENCIAR_USUARIOS',
+                    'CONFIGURAR_SISTEMA',
+                    'GERAR_RELATORIOS'
+                ]
+            });
+
+            if (error) {
+                res.status(400).json({ error });
+                return;
+            }
+
+            const usuario = await new CriarUsuario(this.usuarioRepository, this.pessoaRepository)
+                .execute(criarUsuarioDto!, tenantId, 'sistema');
+
+            res.status(201).json({
+                message: 'Primeiro usuário criado com sucesso',
+                usuario: {
+                    id: usuario.id,
+                    usuario: usuario.usuario,
+                    papel: usuario.papel,
+                    permissoes: usuario.permissoes
+                }
+            });
+
+        } catch (error) {
+            this.handleError(error, res);
+        }
     };
 }

@@ -24,7 +24,7 @@ export class AppRoutes {
         // ===================================
 
         // Autenticação (sem tenant - usado para login inicial)
-        router.use('/api/auth', AuthRoutes.routes);
+       // router.use('/api/auth', AuthRoutes.routes);
 
         // Gestão de Tenants (super admin apenas)
         router.use('/api/tenants', TenantRoutes.routes);

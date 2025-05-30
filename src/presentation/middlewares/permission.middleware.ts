@@ -6,8 +6,12 @@ import { NextFunction, Request, Response } from "express";
 export class PermissionMiddleware {
     static checkPermissions = (permissoesRequeridas: string[]) => {
         return (req: Request, res: Response, next: NextFunction): any => {
+          
+            
+            
             try {
-                const user = req.body.user;
+                const user = req.body;
+                  console.log('checkPermissions: ', req.body);
 
                 if (!user) {
                     return res.status(401).json({ error: 'Usuário não autenticado' });

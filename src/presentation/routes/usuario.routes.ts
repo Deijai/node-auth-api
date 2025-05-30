@@ -1,4 +1,7 @@
+// ===================================
+// CORREÇÃO DA ORDEM DOS MIDDLEWARES
 // presentation/routes/usuario.routes.ts
+// ===================================
 import { Router } from "express";
 import { UsuarioController } from "../controllers/usuario.controller";
 import { UsuarioRepositoryImpl } from "../../infrastructure/repositories/usuario.repository.impl";
@@ -22,18 +25,32 @@ export class UsuarioRoutes {
         
         const controller = new UsuarioController(usuarioRepository, pessoaRepository);
 
-        // Middleware de tenant para todas as rotas
+        // ===================================
+        // ORDEM CORRETA: TENANT PRIMEIRO
+        // ===================================
         router.use(TenantMiddleware.validateTenant);
 
-        // Rota de login (sem autenticação)
+        // ===================================
+        // ROTAS SEM AUTENTICAÇÃO (PÚBLICAS)
+        // ===================================
+        
+        // LOGIN - NÃO PRECISA DE TOKEN!
         router.post('/login', controller.loginUsuario);
+        
+        // CRIAR PRIMEIRO USUÁRIO - APENAS SE NÃO EXISTIR NENHUM
+        router.post('/setup', controller.criarPrimeiroUsuario);
 
-        // Aplicar middleware de autenticação para as demais rotas
-        //router.use(AuthMiddleware.validateJWT);
+        // ===================================
+        // APLICAR AUTENTICAÇÃO PARA OUTRAS ROTAS
+        // ===================================
+        router.use(AuthMiddleware.validateJWT);
 
-        // Rotas autenticadas
+        // ===================================
+        // ROTAS PROTEGIDAS (COM TOKEN)
+        // ===================================
+        
         router.post('/', 
-            //PermissionMiddleware.checkPermissions(['GERENCIAR_USUARIOS']),
+            PermissionMiddleware.checkPermissions(['GERENCIAR_USUARIOS']),
             controller.criarUsuario
         );
         
@@ -42,6 +59,7 @@ export class UsuarioRoutes {
             controller.buscarUsuarios
         );
         
+        // Perfil do próprio usuário (sem permissão especial)
         router.get('/perfil', controller.obterPerfilUsuario);
         
         router.get('/:id', 
@@ -54,6 +72,7 @@ export class UsuarioRoutes {
             controller.atualizarUsuario
         );
         
+        // Alterar própria senha (sem permissão especial)
         router.put('/:id/senha', controller.alterarSenha);
         
         router.put('/:id/bloquear', 

@@ -7,6 +7,15 @@ import { CriarUsuarioDto } from "../dtos/usuario/criar-usuario.dto";
 import { LoginUsuarioDto } from "../dtos/usuario/login-usuario.dto";
 import { UsuarioEntity } from "../entities/usuario.entity";
 
+// Definir tipos mais específicos para as permissões
+export type PermissaoUsuario = 
+    | 'CADASTRAR_PACIENTE' | 'EDITAR_PACIENTE' | 'VISUALIZAR_PACIENTE' | 'DELETAR_PACIENTE'
+    | 'CADASTRAR_MEDICO' | 'EDITAR_MEDICO' | 'VISUALIZAR_MEDICO' | 'DELETAR_MEDICO'
+    | 'AGENDAR_CONSULTA' | 'CANCELAR_CONSULTA' | 'REALIZAR_ATENDIMENTO' | 'VISUALIZAR_AGENDA'
+    | 'PRESCREVER_MEDICAMENTO' | 'SOLICITAR_EXAME' | 'GERAR_RELATORIOS'
+    | 'GERENCIAR_USUARIOS' | 'CONFIGURAR_SISTEMA' | 'GERENCIAR_UNIDADES'
+    | 'VISUALIZAR_FINANCEIRO' | 'GERENCIAR_ESTOQUE' | 'ADMIN_SISTEMA';
+
 export interface BuscarUsuarioResult {
     data: UsuarioEntity[];
     total: number;
@@ -21,10 +30,11 @@ export interface LoginResult {
         nome: string;
         usuario: string;
         papel: string;
-        permissoes: string[];
+        permissoes: PermissaoUsuario[]; // Usar tipo específico
         tenant_id: string;
     };
 }
+
 
 export abstract class UsuarioDatasource {
     abstract criar(criarUsuarioDto: CriarUsuarioDto, tenantId: string, userId: string): Promise<UsuarioEntity>;
