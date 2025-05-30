@@ -1,12 +1,12 @@
 // presentation/routes/documento.routes.ts
 import { Router } from "express";
 import { DocumentoController } from "../controllers/documento.controller";
-import { DocumentoRepositoryImpl } from "../../infrastructure/repositories/documento.repository.impl";
 import { DocumentoDatasourceImpl } from "../../infrastructure/datasources/documento.datasource.impl";
 import { PessoaRepositoryImpl } from "../../infrastructure/repositories/pessoa.repository.impl";
 import { PessoaDatasourceImpl } from "../../infrastructure/datasources/pessoa.datasource.impl";
-import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
+import { DocumentoRepositoryImpl } from "../../infrastructure/repositories/documento.repository.impl";
+import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { PermissionMiddleware } from "../middlewares/permission.middleware";
 
 export class DocumentoRoutes {

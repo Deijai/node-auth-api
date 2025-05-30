@@ -16,7 +16,7 @@ export class PacienteController {
     constructor(
         private readonly pacienteRepository: PacienteRepository,
         private readonly pessoaRepository: PessoaRepository
-    ) {}
+    ) { }
 
     criarPaciente = (req: Request, res: Response) => {
         const [error, criarPacienteDto] = CriarPacienteDto.create(req.body);
@@ -87,9 +87,8 @@ export class PacienteController {
         this.pessoaRepository.buscarPorCpf(cpf, tenantId)
             .then(pessoa => {
                 if (!pessoa) {
-                    return res.status(404).json({ error: 'Pessoa não encontrada' });
+                    throw CustomError.notfound('Pessoa não encontrada');
                 }
-                
                 return this.pacienteRepository.buscarPorPessoa(pessoa.id, tenantId);
             })
             .then(paciente => {
@@ -118,7 +117,7 @@ export class PacienteController {
     atualizarPaciente = (req: Request, res: Response) => {
         const { id } = req.params;
         const [error, atualizarPacienteDto] = AtualizarPacienteDto.create(req.body);
-        
+
         if (error) {
             res.status(400).json({ error });
             return;
@@ -156,7 +155,7 @@ export class PacienteController {
                 if (!paciente) {
                     return res.status(404).json({ error: 'Paciente não encontrado' });
                 }
-                
+
                 res.json({
                     paciente_id: paciente.id,
                     nome: paciente.pessoa?.nome,

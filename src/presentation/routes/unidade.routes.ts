@@ -4,10 +4,10 @@ import { UnidadeController } from "../controllers/unidade.controller";
 import { UnidadeDatasourceImpl } from "../../infrastructure/datasources/unidade.datasource.impl";
 import { UsuarioRepositoryImpl } from "../../infrastructure/repositories/usuario.repository.impl";
 import { UsuarioDatasourceImpl } from "../../infrastructure/datasources/usuario.datasource.impl";
-import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
-import { PermissionMiddleware } from "../middlewares/permission.middleware";
 import { UnidadeRepositoryImpl } from "../../infrastructure/repositories/unidade.repository.impl";
+import { PermissionMiddleware } from "../middlewares/permission.middleware";
+import { TenantMiddleware } from "../middlewares/tenant.middleware";
 
 export class UnidadeRoutes {
     static get routes(): Router {

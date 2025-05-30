@@ -18,7 +18,7 @@ export class MedicoController {
         private readonly pessoaRepository: PessoaRepository
     ) {}
 
-    criarMedico = (req: Request, res: Response) => {
+    criarMedico = (req: Request, res: Response): void => {
         const [error, criarMedicoDto] = CriarMedicoDto.create(req.body);
         if (error) {
             res.status(400).json({ error });
@@ -34,7 +34,7 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    criarMedicoCompleto = (req: Request, res: Response) => {
+    criarMedicoCompleto = (req: Request, res: Response): void => {
         const [error, criarMedicoCompletoDto] = CriarMedicoCompletoDto.create(req.body);
         if (error) {
             res.status(400).json({ error });
@@ -50,7 +50,7 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarMedicos = (req: Request, res: Response) => {
+    buscarMedicos = (req: Request, res: Response): void => {
         const [error, buscarMedicoDto] = BuscarMedicoDto.create(req.query);
         if (error) {
             res.status(400).json({ error });
@@ -65,35 +65,37 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarMedicoPorId = (req: Request, res: Response) => {
+    buscarMedicoPorId = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         this.medicoRepository.buscarPorId(id, tenantId)
             .then(medico => {
                 if (!medico) {
-                    return res.status(404).json({ error: 'Médico não encontrado' });
+                    res.status(404).json({ error: 'Médico não encontrado' });
+                    return;
                 }
                 res.json(medico);
             })
             .catch(error => this.handleError(error, res));
     };
 
-    buscarMedicoPorCrm = (req: Request, res: Response) => {
+    buscarMedicoPorCrm = (req: Request, res: Response): void => {
         const { crm } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         this.medicoRepository.buscarPorCrm(crm, tenantId)
             .then(medico => {
                 if (!medico) {
-                    return res.status(404).json({ error: 'Médico não encontrado' });
+                    res.status(404).json({ error: 'Médico não encontrado' });
+                    return;
                 }
                 res.json(medico);
             })
             .catch(error => this.handleError(error, res));
     };
 
-    buscarMedicosPorUnidade = (req: Request, res: Response) => {
+    buscarMedicosPorUnidade = (req: Request, res: Response): void => {
         const { unidadeId } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
@@ -102,7 +104,7 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarMedicosPorEspecialidade = (req: Request, res: Response) => {
+    buscarMedicosPorEspecialidade = (req: Request, res: Response): void => {
         const { especialidade } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
@@ -111,18 +113,20 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    obterAgendaMedico = (req: Request, res: Response) => {
+    obterAgendaMedico = (req: Request, res: Response): void => {
         const { id } = req.params;
         const { data } = req.query;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         if (!data) {
-            return res.status(400).json({ error: 'Data é obrigatória' });
+            res.status(400).json({ error: 'Data é obrigatória' });
+            return;
         }
 
         const dataConsulta = new Date(data as string);
         if (isNaN(dataConsulta.getTime())) {
-            return res.status(400).json({ error: 'Data inválida' });
+            res.status(400).json({ error: 'Data inválida' });
+            return;
         }
 
         this.medicoRepository.obterAgenda(id, dataConsulta, tenantId)
@@ -134,7 +138,7 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    atualizarMedico = (req: Request, res: Response) => {
+    atualizarMedico = (req: Request, res: Response): void => {
         const { id } = req.params;
         const [error, atualizarMedicoDto] = AtualizarMedicoDto.create(req.body);
         
@@ -152,21 +156,22 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    deletarMedico = (req: Request, res: Response) => {
+    deletarMedico = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         this.medicoRepository.deletar(id, tenantId)
             .then(deletado => {
                 if (!deletado) {
-                    return res.status(404).json({ error: 'Médico não encontrado' });
+                    res.status(404).json({ error: 'Médico não encontrado' });
+                    return;
                 }
                 res.json({ message: 'Médico deletado com sucesso' });
             })
             .catch(error => this.handleError(error, res));
     };
 
-    obterEstatisticasMedico = (req: Request, res: Response) => {
+    obterEstatisticasMedico = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
@@ -174,7 +179,8 @@ export class MedicoController {
         this.medicoRepository.buscarPorId(id, tenantId)
             .then(medico => {
                 if (!medico) {
-                    return res.status(404).json({ error: 'Médico não encontrado' });
+                    res.status(404).json({ error: 'Médico não encontrado' });
+                    return;
                 }
                 
                 // Aqui você pode adicionar queries para buscar estatísticas
@@ -195,11 +201,97 @@ export class MedicoController {
             .catch(error => this.handleError(error, res));
     };
 
-    private handleError = (error: unknown, res: Response) => {
+    private handleError = (error: unknown, res: Response): void => {
         if (error instanceof CustomError) {
-            return res.status(error.statusCode).json({ error: error.message });
+            res.status(error.statusCode).json({ error: error.message });
+            return;
         }
         console.error('Erro medico controller:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
+        res.status(500).json({ error: 'Erro interno do servidor' });
+    };
+}
+
+// ========================================
+// ALTERNATIVA: Usando async/await (mais limpa)
+// ========================================
+
+export class MedicoControllerAsync {
+    constructor(
+        private readonly medicoRepository: MedicoRepository,
+        private readonly pessoaRepository: PessoaRepository
+    ) {}
+
+    criarMedico = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const [error, criarMedicoDto] = CriarMedicoDto.create(req.body);
+            if (error) {
+                res.status(400).json({ error });
+                return;
+            }
+
+            const tenantId = req.body.tenant?.id || req.body.tenantId;
+            const userId = req.body.user?.id || req.body.userId;
+
+            const medico = await new CriarMedico(this.medicoRepository, this.pessoaRepository)
+                .execute(criarMedicoDto!, tenantId, userId);
+            
+            res.status(201).json(medico);
+        } catch (error) {
+            this.handleError(error, res);
+        }
+    };
+
+    buscarMedicoPorId = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { id } = req.params;
+            const tenantId = req.body.tenant?.id || req.body.tenantId;
+
+            const medico = await this.medicoRepository.buscarPorId(id, tenantId);
+            if (!medico) {
+                res.status(404).json({ error: 'Médico não encontrado' });
+                return;
+            }
+            
+            res.json(medico);
+        } catch (error) {
+            this.handleError(error, res);
+        }
+    };
+
+    obterAgendaMedico = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { id } = req.params;
+            const { data } = req.query;
+            const tenantId = req.body.tenant?.id || req.body.tenantId;
+
+            if (!data) {
+                res.status(400).json({ error: 'Data é obrigatória' });
+                return;
+            }
+
+            const dataConsulta = new Date(data as string);
+            if (isNaN(dataConsulta.getTime())) {
+                res.status(400).json({ error: 'Data inválida' });
+                return;
+            }
+
+            const agenda = await this.medicoRepository.obterAgenda(id, dataConsulta, tenantId);
+            res.json({
+                medico_id: id,
+                data: dataConsulta,
+                horarios: agenda
+            });
+        } catch (error) {
+            this.handleError(error, res);
+        }
+    };
+
+    private handleError = (error: unknown, res: Response): void => {
+        if (error instanceof CustomError) {
+            res.status(error.statusCode).json({ error: error.message });
+            return;
+        }
+        console.error('Erro medico controller:', error);
+        res.status(500).json({ error: 'Erro interno do servidor' });
     };
 }

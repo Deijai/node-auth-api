@@ -21,7 +21,7 @@ export class ConsultaController {
         private readonly unidadeRepository: UnidadeRepository
     ) {}
 
-    criarConsulta = (req: Request, res: Response) => {
+    criarConsulta = (req: Request, res: Response): void => {
         const [error, criarConsultaDto] = CriarConsultaDto.create(req.body);
         if (error) {
             res.status(400).json({ error });
@@ -37,7 +37,7 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarConsultas = (req: Request, res: Response) => {
+    buscarConsultas = (req: Request, res: Response): void => {
         const [error, buscarConsultaDto] = BuscarConsultaDto.create(req.query);
         if (error) {
             res.status(400).json({ error });
@@ -51,21 +51,22 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarConsultaPorId = (req: Request, res: Response) => {
+    buscarConsultaPorId = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         this.consultaRepository.buscarPorId(id, tenantId)
             .then(consulta => {
                 if (!consulta) {
-                    return res.status(404).json({ error: 'Consulta não encontrada' });
+                    res.status(404).json({ error: 'Consulta não encontrada' });
+                    return;
                 }
                 res.json(consulta);
             })
             .catch(error => this.handleError(error, res));
     };
 
-    buscarConsultasPorPaciente = (req: Request, res: Response) => {
+    buscarConsultasPorPaciente = (req: Request, res: Response): void => {
         const { pacienteId } = req.params;
         const { limit } = req.query;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
@@ -75,18 +76,20 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarAgendaMedico = (req: Request, res: Response) => {
+    buscarAgendaMedico = (req: Request, res: Response): void => {
         const { medicoId } = req.params;
         const { data } = req.query;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         if (!data) {
-            return res.status(400).json({ error: 'Data é obrigatória' });
+            res.status(400).json({ error: 'Data é obrigatória' });
+            return;
         }
 
         const dataConsulta = new Date(data as string);
         if (isNaN(dataConsulta.getTime())) {
-            return res.status(400).json({ error: 'Data inválida' });
+            res.status(400).json({ error: 'Data inválida' });
+            return;
         }
 
         this.consultaRepository.buscarPorMedico(medicoId, dataConsulta, tenantId)
@@ -94,18 +97,20 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarAgendaUnidade = (req: Request, res: Response) => {
+    buscarAgendaUnidade = (req: Request, res: Response): void => {
         const { unidadeId } = req.params;
         const { data } = req.query;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         if (!data) {
-            return res.status(400).json({ error: 'Data é obrigatória' });
+            res.status(400).json({ error: 'Data é obrigatória' });
+            return;
         }
 
         const dataConsulta = new Date(data as string);
         if (isNaN(dataConsulta.getTime())) {
-            return res.status(400).json({ error: 'Data inválida' });
+            res.status(400).json({ error: 'Data inválida' });
+            return;
         }
 
         this.consultaRepository.buscarAgendaUnidade(unidadeId, dataConsulta, tenantId)
@@ -113,7 +118,7 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    iniciarAtendimento = (req: Request, res: Response) => {
+    iniciarAtendimento = (req: Request, res: Response): void => {
         const { id } = req.params;
         const [error, iniciarAtendimentoDto] = IniciarAtendimentoDto.create(req.body);
         
@@ -131,7 +136,7 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    finalizarConsulta = (req: Request, res: Response) => {
+    finalizarConsulta = (req: Request, res: Response): void => {
         const { id } = req.params;
         const [error, finalizarConsultaDto] = FinalizarConsultaDto.create(req.body);
         
@@ -149,27 +154,29 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    cancelarConsulta = (req: Request, res: Response) => {
+    cancelarConsulta = (req: Request, res: Response): void => {
         const { id } = req.params;
         const { motivo } = req.body;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
         const userId = req.body.user?.id || req.body.userId;
 
         if (!motivo) {
-            return res.status(400).json({ error: 'Motivo do cancelamento é obrigatório' });
+            res.status(400).json({ error: 'Motivo do cancelamento é obrigatório' });
+            return;
         }
 
         this.consultaRepository.cancelarConsulta(id, motivo, tenantId, userId)
             .then(cancelado => {
                 if (!cancelado) {
-                    return res.status(404).json({ error: 'Consulta não encontrada' });
+                    res.status(404).json({ error: 'Consulta não encontrada' });
+                    return;
                 }
                 res.json({ message: 'Consulta cancelada com sucesso' });
             })
             .catch(error => this.handleError(error, res));
     };
 
-    marcarNaoCompareceu = (req: Request, res: Response) => {
+    marcarNaoCompareceu = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
         const userId = req.body.user?.id || req.body.userId;
@@ -177,14 +184,15 @@ export class ConsultaController {
         this.consultaRepository.marcarNaoCompareceu(id, tenantId, userId)
             .then(marcado => {
                 if (!marcado) {
-                    return res.status(404).json({ error: 'Consulta não encontrada' });
+                    res.status(404).json({ error: 'Consulta não encontrada' });
+                    return;
                 }
                 res.json({ message: 'Consulta marcada como não compareceu' });
             })
             .catch(error => this.handleError(error, res));
     };
 
-    obterEstatisticas = (req: Request, res: Response) => {
+    obterEstatisticas = (req: Request, res: Response): void => {
         const { unidadeId } = req.params;
         const { data_inicio, data_fim } = req.query;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
@@ -197,17 +205,19 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    verificarDisponibilidade = (req: Request, res: Response) => {
+    verificarDisponibilidade = (req: Request, res: Response): void => {
         const { medicoId, dataHora, duracao } = req.query;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         if (!medicoId || !dataHora) {
-            return res.status(400).json({ error: 'Médico e data/hora são obrigatórios' });
+            res.status(400).json({ error: 'Médico e data/hora são obrigatórios' });
+            return;
         }
 
         const dataHoraDate = new Date(dataHora as string);
         if (isNaN(dataHoraDate.getTime())) {
-            return res.status(400).json({ error: 'Data e hora inválidas' });
+            res.status(400).json({ error: 'Data e hora inválidas' });
+            return;
         }
 
         const duracaoNum = parseInt(duracao as string) || 30;
@@ -217,11 +227,12 @@ export class ConsultaController {
             .catch(error => this.handleError(error, res));
     };
 
-    private handleError = (error: unknown, res: Response) => {
+    private handleError = (error: unknown, res: Response): void => {
         if (error instanceof CustomError) {
-            return res.status(error.statusCode).json({ error: error.message });
+            res.status(error.statusCode).json({ error: error.message });
+            return;
         }
         console.error('Erro consulta controller:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
+        res.status(500).json({ error: 'Erro interno do servidor' });
     };
 }

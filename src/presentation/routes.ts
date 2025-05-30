@@ -122,7 +122,7 @@ export class AppRoutes {
         // ===================================
         // ROTA 404 PARA APIs NÃO ENCONTRADAS
         // ===================================
-        router.use('/api/*', (req, res) => {
+        router.use(/(.*)/, (req, res) => {
             res.status(404).json({
                 error: 'Endpoint não encontrado',
                 path: req.path,

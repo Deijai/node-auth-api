@@ -98,7 +98,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
         try {
             const tenant = await TenantModel.findById(id);
             if (!tenant) return null;
-            
+
             return TenantMapper.tenantEntityFromObject(tenant);
         } catch (error) {
             throw CustomError.internalServerError('Erro ao buscar tenant');
@@ -109,7 +109,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
         try {
             const tenant = await TenantModel.findOne({ codigo });
             if (!tenant) return null;
-            
+
             return TenantMapper.tenantEntityFromObject(tenant);
         } catch (error) {
             throw CustomError.internalServerError('Erro ao buscar tenant por código');
@@ -120,7 +120,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
         try {
             const tenant = await TenantModel.findOne({ subdomain });
             if (!tenant) return null;
-            
+
             return TenantMapper.tenantEntityFromObject(tenant);
         } catch (error) {
             throw CustomError.internalServerError('Erro ao buscar tenant por subdomínio');
@@ -131,7 +131,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
         try {
             const tenant = await TenantModel.findOne({ cnpj });
             if (!tenant) return null;
-            
+
             return TenantMapper.tenantEntityFromObject(tenant);
         } catch (error) {
             throw CustomError.internalServerError('Erro ao buscar tenant por CNPJ');
@@ -141,7 +141,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
     async buscar(buscarTenantDto: BuscarTenantDto): Promise<BuscarTenantResult> {
         try {
             const { page, limit, search, status, plano, estado } = buscarTenantDto;
-            
+
             const query: any = {};
 
             if (search) {
@@ -388,7 +388,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
                 {
                     status: 'ATIVO',
                     'plano.status': 'ATIVO',
-                    $unset: { 
+                    $unset: {
                         observacoes_suspensao: 1,
                         data_suspensao: 1
                     },
@@ -425,7 +425,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
     }
 
     private obterLimitesPorPlano(tipo: string): any {
-        const limitesPorPlano = {
+        const limitesPorPlano: Record<string, any> = {
             'BASICO': {
                 usuarios_max: 10,
                 pacientes_max: 1000,
@@ -460,11 +460,11 @@ export class TenantDatasourceImpl implements TenantDatasource {
     }
 
     private obterValorPlano(tipo: string): number {
-        const valoresPorPlano = {
+        const valoresPorPlano: Record<string, number> = {
             'BASICO': 199.90,
             'INTERMEDIARIO': 499.90,
             'AVANCADO': 999.90,
-            'PERSONALIZADO': 0 // Valor personalizado
+            'PERSONALIZADO': 0
         };
 
         return valoresPorPlano[tipo] || valoresPorPlano['BASICO'];

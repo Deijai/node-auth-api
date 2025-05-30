@@ -11,8 +11,8 @@ import { UnidadeRepositoryImpl } from "../../infrastructure/repositories/unidade
 import { UnidadeDatasourceImpl } from "../../infrastructure/datasources/unidade.datasource.impl";
 import { PessoaRepositoryImpl } from "../../infrastructure/repositories/pessoa.repository.impl";
 import { PessoaDatasourceImpl } from "../../infrastructure/datasources/pessoa.datasource.impl";
-import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
+import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { PermissionMiddleware } from "../middlewares/permission.middleware";
 
 export class ConsultaRoutes {

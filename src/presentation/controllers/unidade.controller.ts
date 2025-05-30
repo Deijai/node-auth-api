@@ -6,8 +6,8 @@ import { BuscarUnidadeDto } from '../../domain/dtos/unidade/buscar-unidade.dto';
 import { CriarUnidadeDto } from '../../domain/dtos/unidade/criar-unidade.dto';
 import { UnidadeRepository } from '../../domain/repositories/unidade.repository';
 import { UsuarioRepository } from '../../domain/repositories/usuario.repository';
-import { BuscarUnidadesProximas } from '../../domain/use-cases/documento/buscar-unidades-proximas.use-case';
 import { CriarUnidade } from '../../domain/use-cases/documento/criar-unidade.use-case';
+import { BuscarUnidadesProximas } from '../../domain/use-cases/documento/buscar-unidades-proximas.use-case';
 
 export class UnidadeController {
     constructor(
@@ -15,7 +15,7 @@ export class UnidadeController {
         private readonly usuarioRepository: UsuarioRepository
     ) {}
 
-    criarUnidade = (req: Request, res: Response) => {
+    criarUnidade = (req: Request, res: Response): void => {
         const [error, criarUnidadeDto] = CriarUnidadeDto.create(req.body);
         if (error) {
             res.status(400).json({ error });
@@ -31,7 +31,7 @@ export class UnidadeController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarUnidades = (req: Request, res: Response) => {
+    buscarUnidades = (req: Request, res: Response): void => {
         const [error, buscarUnidadeDto] = BuscarUnidadeDto.create(req.query);
         if (error) {
             res.status(400).json({ error });
@@ -45,21 +45,22 @@ export class UnidadeController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarUnidadePorId = (req: Request, res: Response) => {
+    buscarUnidadePorId = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         this.unidadeRepository.buscarPorId(id, tenantId)
             .then(unidade => {
                 if (!unidade) {
-                    return res.status(404).json({ error: 'Unidade não encontrada' });
+                    res.status(404).json({ error: 'Unidade não encontrada' });
+                    return;
                 }
                 res.json(unidade);
             })
             .catch(error => this.handleError(error, res));
     };
 
-    buscarUnidadesPorTipo = (req: Request, res: Response) => {
+    buscarUnidadesPorTipo = (req: Request, res: Response): void => {
         const { tipo } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
@@ -68,7 +69,7 @@ export class UnidadeController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarUnidadesPorEspecialidade = (req: Request, res: Response) => {
+    buscarUnidadesPorEspecialidade = (req: Request, res: Response): void => {
         const { especialidade } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
@@ -77,12 +78,13 @@ export class UnidadeController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarUnidadesProximas = (req: Request, res: Response) => {
+    buscarUnidadesProximas = (req: Request, res: Response): void => {
         const { latitude, longitude, raio } = req.query;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         if (!latitude || !longitude) {
-            return res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
+            res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
+            return;
         }
 
         const lat = parseFloat(latitude as string);
@@ -90,7 +92,8 @@ export class UnidadeController {
         const raioKm = raio ? parseFloat(raio as string) : 10; // Default 10km
 
         if (isNaN(lat) || isNaN(lng) || isNaN(raioKm)) {
-            return res.status(400).json({ error: 'Coordenadas ou raio inválidos' });
+            res.status(400).json({ error: 'Coordenadas ou raio inválidos' });
+            return;
         }
 
         new BuscarUnidadesProximas(this.unidadeRepository)
@@ -99,7 +102,7 @@ export class UnidadeController {
             .catch(error => this.handleError(error, res));
     };
 
-    obterEstatisticasUnidade = (req: Request, res: Response) => {
+    obterEstatisticasUnidade = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
@@ -108,7 +111,7 @@ export class UnidadeController {
             .catch(error => this.handleError(error, res));
     };
 
-    atualizarUnidade = (req: Request, res: Response) => {
+    atualizarUnidade = (req: Request, res: Response): void => {
         const { id } = req.params;
         const [error, atualizarUnidadeDto] = AtualizarUnidadeDto.create(req.body);
         
@@ -125,25 +128,27 @@ export class UnidadeController {
             .catch(error => this.handleError(error, res));
     };
 
-    deletarUnidade = (req: Request, res: Response) => {
+    deletarUnidade = (req: Request, res: Response): void => {
         const { id } = req.params;
         const tenantId = req.body.tenant?.id || req.body.tenantId;
 
         this.unidadeRepository.deletar(id, tenantId)
             .then(deletado => {
                 if (!deletado) {
-                    return res.status(404).json({ error: 'Unidade não encontrada' });
+                    res.status(404).json({ error: 'Unidade não encontrada' });
+                    return;
                 }
                 res.json({ message: 'Unidade deletada com sucesso' });
             })
             .catch(error => this.handleError(error, res));
     };
 
-    private handleError = (error: unknown, res: Response) => {
+    private handleError = (error: unknown, res: Response): void => {
         if (error instanceof CustomError) {
-            return res.status(error.statusCode).json({ error: error.message });
+            res.status(error.statusCode).json({ error: error.message });
+            return;
         }
         console.error('Erro unidade controller:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
+        res.status(500).json({ error: 'Erro interno do servidor' });
     };
 }

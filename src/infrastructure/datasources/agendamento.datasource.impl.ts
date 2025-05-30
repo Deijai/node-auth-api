@@ -21,7 +21,8 @@ export class AgendamentoDatasourceImpl implements AgendamentoDatasource {
                 updated_by: userId
             });
 
-            const agendamentoPopulado = await this.popularAgendamento(agendamento._id, tenantId);
+            // CORREÇÃO: Converter ObjectId para string
+            const agendamentoPopulado = await this.popularAgendamento(agendamento._id.toString(), tenantId);
             return AgendamentoMapper.agendamentoEntityFromObject(agendamentoPopulado);
         } catch (error: any) {
             throw CustomError.internalServerError('Erro ao criar agendamento');
@@ -231,7 +232,8 @@ export class AgendamentoDatasourceImpl implements AgendamentoDatasource {
                 throw CustomError.notfound('Agendamento não encontrado');
             }
 
-            const agendamentoPopulado = await this.popularAgendamento(agendamento._id, tenantId);
+            // CORREÇÃO: Converter ObjectId para string
+            const agendamentoPopulado = await this.popularAgendamento(agendamento._id.toString(), tenantId);
             return AgendamentoMapper.agendamentoEntityFromObject(agendamentoPopulado);
         } catch (error) {
             if (error instanceof CustomError) throw error;
@@ -293,7 +295,8 @@ export class AgendamentoDatasourceImpl implements AgendamentoDatasource {
                 throw CustomError.notfound('Agendamento não encontrado');
             }
 
-            const agendamentoPopulado = await this.popularAgendamento(agendamento._id, tenantId);
+            // CORREÇÃO: Converter ObjectId para string
+            const agendamentoPopulado = await this.popularAgendamento(agendamento._id.toString(), tenantId);
             return AgendamentoMapper.agendamentoEntityFromObject(agendamentoPopulado);
         } catch (error) {
             if (error instanceof CustomError) throw error;

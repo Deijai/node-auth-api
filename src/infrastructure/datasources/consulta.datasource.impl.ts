@@ -9,12 +9,80 @@ import { IniciarAtendimentoDto } from "../../domain/dtos/consulta/iniciar-atendi
 import { ConsultaEntity } from "../../domain/entities/consulta.entity";
 import { ConsultaMapper } from "../mappers/consulta.mapper";
 
+// Interface para Sinais Vitais com IMC
+interface SinaisVitaisComIMC {
+    pressao_arterial?: string;
+    temperatura?: number;
+    frequencia_cardiaca?: number;
+    frequencia_respiratoria?: number;
+    saturacao_oxigenio?: number;
+    peso?: number;
+    altura?: number;
+    imc?: number; // Adicionamos o IMC
+}
+
 export class ConsultaDatasourceImpl implements ConsultaDatasource {
-    buscarPorMedico(medicoId: string, data: Date, tenantId: string): Promise<ConsultaEntity[]> {
-        throw new Error("Method not implemented.");
+    
+    // IMPLEMENTAÇÃO DOS MÉTODOS QUE ESTAVAM COM "Method not implemented"
+    async buscarPorMedico(medicoId: string, data: Date, tenantId: string): Promise<ConsultaEntity[]> {
+        try {
+            const inicioData = new Date(data);
+            inicioData.setHours(0, 0, 0, 0);
+            
+            const fimData = new Date(data);
+            fimData.setHours(23, 59, 59, 999);
+
+            const consultas = await ConsultaModel.find({
+                tenant_id: tenantId,
+                medico_id: medicoId,
+                data_hora_agendada: {
+                    $gte: inicioData,
+                    $lte: fimData
+                }
+            })
+            .populate({
+                path: 'paciente_id',
+                populate: { path: 'pessoa_id', select: 'nome cpf' }
+            })
+            .populate('unidade_id', 'nome tipo')
+            .sort({ data_hora_agendada: 1 });
+
+            return consultas.map(consulta => ConsultaMapper.consultaEntityFromObject(consulta));
+        } catch (error) {
+            throw CustomError.internalServerError('Erro ao buscar agenda do médico');
+        }
     }
-    buscarAgendaUnidade(unidadeId: string, data: Date, tenantId: string): Promise<ConsultaEntity[]> {
-        throw new Error("Method not implemented.");
+
+    async buscarAgendaUnidade(unidadeId: string, data: Date, tenantId: string): Promise<ConsultaEntity[]> {
+        try {
+            const inicioData = new Date(data);
+            inicioData.setHours(0, 0, 0, 0);
+            
+            const fimData = new Date(data);
+            fimData.setHours(23, 59, 59, 999);
+
+            const consultas = await ConsultaModel.find({
+                tenant_id: tenantId,
+                unidade_id: unidadeId,
+                data_hora_agendada: {
+                    $gte: inicioData,
+                    $lte: fimData
+                }
+            })
+            .populate({
+                path: 'paciente_id',
+                populate: { path: 'pessoa_id', select: 'nome cpf' }
+            })
+            .populate({
+                path: 'medico_id',
+                populate: { path: 'pessoa_id', select: 'nome' }
+            })
+            .sort({ data_hora_agendada: 1 });
+
+            return consultas.map(consulta => ConsultaMapper.consultaEntityFromObject(consulta));
+        } catch (error) {
+            throw CustomError.internalServerError('Erro ao buscar agenda da unidade');
+        }
     }
 
     async criar(criarConsultaDto: CriarConsultaDto, tenantId: string, userId: string): Promise<ConsultaEntity> {
@@ -27,7 +95,8 @@ export class ConsultaDatasourceImpl implements ConsultaDatasource {
                 updated_by: userId
             });
 
-            const consultaPopulada = await this.popularConsulta(consulta._id, tenantId);
+            // CORREÇÃO: Converter ObjectId para string
+            const consultaPopulada = await this.popularConsulta(consulta._id.toString(), tenantId);
             return ConsultaMapper.consultaEntityFromObject(consultaPopulada);
         } catch (error: any) {
             throw CustomError.internalServerError('Erro ao criar consulta');
@@ -113,17 +182,22 @@ export class ConsultaDatasourceImpl implements ConsultaDatasource {
 
             return consultas.map(consulta => ConsultaMapper.consultaEntityFromObject(consulta));
         } catch (error) {
-            throw CustomError.internalServerError('Erro ao buscar agenda da unidade');
+            throw CustomError.internalServerError('Erro ao buscar consultas do paciente');
         }
     }
 
     async iniciarAtendimento(id: string, iniciarAtendimentoDto: IniciarAtendimentoDto, tenantId: string, userId: string): Promise<ConsultaEntity> {
         try {
+            // CORREÇÃO: Criar objeto com tipagem correta para incluir IMC
+            let sinaisVitais: SinaisVitaisComIMC | undefined = iniciarAtendimentoDto.sinais_vitais;
+            
             // Calcular IMC se peso e altura fornecidos
-            let sinaisVitais = iniciarAtendimentoDto.sinais_vitais;
             if (sinaisVitais?.peso && sinaisVitais?.altura) {
                 const alturaMetros = sinaisVitais.altura / 100;
-                sinaisVitais.imc = parseFloat((sinaisVitais.peso / (alturaMetros * alturaMetros)).toFixed(2));
+                sinaisVitais = {
+                    ...sinaisVitais,
+                    imc: parseFloat((sinaisVitais.peso / (alturaMetros * alturaMetros)).toFixed(2))
+                };
             }
 
             const consulta = await ConsultaModel.findOneAndUpdate(
@@ -145,7 +219,8 @@ export class ConsultaDatasourceImpl implements ConsultaDatasource {
                 throw CustomError.notfound('Consulta não encontrada');
             }
 
-            const consultaPopulada = await this.popularConsulta(consulta._id, tenantId);
+            // CORREÇÃO: Converter ObjectId para string
+            const consultaPopulada = await this.popularConsulta(consulta._id.toString(), tenantId);
             return ConsultaMapper.consultaEntityFromObject(consultaPopulada);
         } catch (error) {
             if (error instanceof CustomError) throw error;
@@ -174,7 +249,8 @@ export class ConsultaDatasourceImpl implements ConsultaDatasource {
                 throw CustomError.notfound('Consulta não encontrada');
             }
 
-            const consultaPopulada = await this.popularConsulta(consulta._id, tenantId);
+            // CORREÇÃO: Converter ObjectId para string
+            const consultaPopulada = await this.popularConsulta(consulta._id.toString(), tenantId);
             return ConsultaMapper.consultaEntityFromObject(consultaPopulada);
         } catch (error) {
             if (error instanceof CustomError) throw error;

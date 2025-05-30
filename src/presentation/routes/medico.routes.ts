@@ -5,8 +5,8 @@ import { MedicoRepositoryImpl } from "../../infrastructure/repositories/medico.r
 import { MedicoDatasourceImpl } from "../../infrastructure/datasources/medico.datasource.impl";
 import { PessoaRepositoryImpl } from "../../infrastructure/repositories/pessoa.repository.impl";
 import { PessoaDatasourceImpl } from "../../infrastructure/datasources/pessoa.datasource.impl";
-import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
+import { TenantMiddleware } from "../middlewares/tenant.middleware";
 import { PermissionMiddleware } from "../middlewares/permission.middleware";
 
 export class MedicoRoutes {

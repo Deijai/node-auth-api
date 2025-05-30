@@ -1,3 +1,4 @@
+
 // presentation/controllers/tenant.controller.ts
 import { Request, Response } from 'express';
 import { CustomError } from '../../domain';
@@ -13,7 +14,7 @@ import { VerificarLimites } from '../../domain/use-cases/tenant/verificar-limite
 export class TenantController {
     constructor(private readonly tenantRepository: TenantRepository) {}
 
-    criarTenant = (req: Request, res: Response) => {
+    criarTenant = (req: Request, res: Response): void => {
         const [error, criarTenantDto] = CriarTenantDto.create(req.body);
         if (error) {
             res.status(400).json({ error });
@@ -28,7 +29,7 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarTenants = (req: Request, res: Response) => {
+    buscarTenants = (req: Request, res: Response): void => {
         const [error, buscarTenantDto] = BuscarTenantDto.create(req.query);
         if (error) {
             res.status(400).json({ error });
@@ -40,33 +41,35 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    buscarTenantPorId = (req: Request, res: Response) => {
+    buscarTenantPorId = (req: Request, res: Response): void => {
         const { id } = req.params;
 
         this.tenantRepository.buscarPorId(id)
             .then(tenant => {
                 if (!tenant) {
-                    return res.status(404).json({ error: 'Tenant não encontrado' });
+                    res.status(404).json({ error: 'Tenant não encontrado' });
+                    return;
                 }
                 res.json(tenant);
             })
             .catch(error => this.handleError(error, res));
     };
 
-    buscarTenantPorSubdomain = (req: Request, res: Response) => {
+    buscarTenantPorSubdomain = (req: Request, res: Response): void => {
         const { subdomain } = req.params;
 
         this.tenantRepository.buscarPorSubdomain(subdomain)
             .then(tenant => {
                 if (!tenant) {
-                    return res.status(404).json({ error: 'Tenant não encontrado' });
+                    res.status(404).json({ error: 'Tenant não encontrado' });
+                    return;
                 }
                 res.json(tenant);
             })
             .catch(error => this.handleError(error, res));
     };
 
-    atualizarTenant = (req: Request, res: Response) => {
+    atualizarTenant = (req: Request, res: Response): void => {
         const { id } = req.params;
         const [error, atualizarTenantDto] = AtualizarTenantDto.create(req.body);
         
@@ -82,7 +85,7 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    configurarTenant = (req: Request, res: Response) => {
+    configurarTenant = (req: Request, res: Response): void => {
         const { id } = req.params;
         const [error, configurarTenantDto] = ConfigurarTenantDto.create(req.body);
         
@@ -99,13 +102,14 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    atualizarPlano = (req: Request, res: Response) => {
+    atualizarPlano = (req: Request, res: Response): void => {
         const { id } = req.params;
         const { plano } = req.body;
         const userId = req.body.user?.id || req.body.userId || 'system';
 
         if (!plano) {
-            return res.status(400).json({ error: 'Dados do plano são obrigatórios' });
+            res.status(400).json({ error: 'Dados do plano são obrigatórios' });
+            return;
         }
 
         this.tenantRepository.atualizarPlano(id, plano, userId)
@@ -113,7 +117,7 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    obterEstatisticas = (req: Request, res: Response) => {
+    obterEstatisticas = (req: Request, res: Response): void => {
         const { id } = req.params;
 
         this.tenantRepository.obterEstatisticas(id)
@@ -121,7 +125,7 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    verificarLimites = (req: Request, res: Response) => {
+    verificarLimites = (req: Request, res: Response): void => {
         const { id } = req.params;
 
         new VerificarLimites(this.tenantRepository)
@@ -130,59 +134,64 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    suspenderTenant = (req: Request, res: Response) => {
+    suspenderTenant = (req: Request, res: Response): void => {
         const { id } = req.params;
         const { motivo } = req.body;
         const userId = req.body.user?.id || req.body.userId || 'system';
 
         if (!motivo) {
-            return res.status(400).json({ error: 'Motivo da suspensão é obrigatório' });
+            res.status(400).json({ error: 'Motivo da suspensão é obrigatório' });
+            return;
         }
 
         this.tenantRepository.suspender(id, motivo, userId)
             .then(suspenso => {
                 if (!suspenso) {
-                    return res.status(404).json({ error: 'Tenant não encontrado' });
+                    res.status(404).json({ error: 'Tenant não encontrado' });
+                    return;
                 }
                 res.json({ message: 'Tenant suspenso com sucesso' });
             })
             .catch(error => this.handleError(error, res));
     };
 
-    reativarTenant = (req: Request, res: Response) => {
+    reativarTenant = (req: Request, res: Response): void => {
         const { id } = req.params;
         const userId = req.body.user?.id || req.body.userId || 'system';
 
         this.tenantRepository.reativar(id, userId)
             .then(reativado => {
                 if (!reativado) {
-                    return res.status(404).json({ error: 'Tenant não encontrado' });
+                    res.status(404).json({ error: 'Tenant não encontrado' });
+                    return;
                 }
                 res.json({ message: 'Tenant reativado com sucesso' });
             })
             .catch(error => this.handleError(error, res));
     };
 
-    deletarTenant = (req: Request, res: Response) => {
+    deletarTenant = (req: Request, res: Response): void => {
         const { id } = req.params;
 
         this.tenantRepository.deletar(id)
             .then(deletado => {
                 if (!deletado) {
-                    return res.status(404).json({ error: 'Tenant não encontrado' });
+                    res.status(404).json({ error: 'Tenant não encontrado' });
+                    return;
                 }
                 res.json({ message: 'Tenant deletado com sucesso' });
             })
             .catch(error => this.handleError(error, res));
     };
 
-    obterConfiguracoesTenant = (req: Request, res: Response) => {
+    obterConfiguracoesTenant = (req: Request, res: Response): void => {
         const tenantId = req.body.tenant?.id || req.params.id;
 
         this.tenantRepository.buscarPorId(tenantId)
             .then(tenant => {
                 if (!tenant) {
-                    return res.status(404).json({ error: 'Tenant não encontrado' });
+                    res.status(404).json({ error: 'Tenant não encontrado' });
+                    return;
                 }
                 
                 // Retornar apenas configurações públicas (sem dados sensíveis)
@@ -207,7 +216,7 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    verificarDisponibilidadeSubdomain = (req: Request, res: Response) => {
+    verificarDisponibilidadeSubdomain = (req: Request, res: Response): void => {
         const { subdomain } = req.params;
 
         this.tenantRepository.buscarPorSubdomain(subdomain)
@@ -220,11 +229,12 @@ export class TenantController {
             .catch(error => this.handleError(error, res));
     };
 
-    private handleError = (error: unknown, res: Response) => {
+    private handleError = (error: unknown, res: Response): void => {
         if (error instanceof CustomError) {
-            return res.status(error.statusCode).json({ error: error.message });
+            res.status(error.statusCode).json({ error: error.message });
+            return;
         }
         console.error('Erro tenant controller:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
+        res.status(500).json({ error: 'Erro interno do servidor' });
     };
 }
