@@ -1,6 +1,5 @@
 // presentation/routes.ts
 import { Router } from "express";
-import { AuthRoutes } from "./auth/routes";
 import { PessoaRoutes } from "./routes/pessoa.routes";
 import { PacienteRoutes } from "./routes/paciente.routes";
 import { MedicoRoutes } from "./routes/medico.routes";

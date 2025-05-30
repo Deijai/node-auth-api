@@ -1,12 +1,12 @@
 // infrastructure/datasources/tenant.datasource.impl.ts
 import { TenantModel, UsuarioModel, PacienteModel, UnidadeModel, ConsultaModel } from "../../data/mongodb";
-import { CustomError } from "../../domain";
 import { BuscarTenantResult, EstatisticasTenant, TenantDatasource } from "../../domain/datasources/tenant.datasource";
 import { AtualizarTenantDto } from "../../domain/dtos/tenant/atualizar-tenant.dto";
 import { BuscarTenantDto } from "../../domain/dtos/tenant/buscar-tenant.dto";
 import { ConfigurarTenantDto } from "../../domain/dtos/tenant/configurar-tenant.dto";
 import { CriarTenantDto } from "../../domain/dtos/tenant/criar-tenant.dto";
 import { TenantEntity } from "../../domain/entities/tenant.entity";
+import { CustomError } from "../../domain/errors/custom.error";
 import { TenantMapper } from "../mappers/tenant.mapper";
 
 export class TenantDatasourceImpl implements TenantDatasource {

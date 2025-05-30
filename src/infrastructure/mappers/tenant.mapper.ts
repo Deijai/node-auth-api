@@ -1,6 +1,6 @@
 // infrastructure/mappers/tenant.mapper.ts
-import { CustomError } from "../../domain";
 import { TenantEntity } from "../../domain/entities/tenant.entity";
+import { CustomError } from "../../domain/errors/custom.error";
 
 export class TenantMapper {
     static tenantEntityFromObject(object: { [key: string]: any }): TenantEntity {

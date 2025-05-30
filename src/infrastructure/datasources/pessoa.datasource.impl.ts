@@ -2,9 +2,10 @@
 import { PessoaModel } from "../../data/mongodb";
 import { 
     CriarPessoaDto, AtualizarPessoaDto, 
-    BuscarPessoaDto, PessoaEntity, CustomError 
+    BuscarPessoaDto, PessoaEntity 
 } from "../../domain";
 import { BuscarPessoaResult, PessoaDatasource } from "../../domain/datasources/pessoa.datasource";
+import { CustomError } from "../../domain/errors/custom.error";
 import { PessoaMapper } from "../mappers/pessoa.mapper";
 
 export class PessoaDatasourceImpl implements PessoaDatasource {

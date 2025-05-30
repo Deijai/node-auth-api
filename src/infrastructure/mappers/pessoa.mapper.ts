@@ -1,6 +1,7 @@
 // infrastructure/mappers/pessoa.mapper.ts
 import { Validators } from "../../config";
-import { CustomError, PessoaEntity } from "../../domain";
+import {PessoaEntity } from "../../domain";
+import { CustomError } from "../../domain/errors/custom.error";
 
 export class PessoaMapper {
     static pessoaEntityFromObject(object: { [key: string]: any }): PessoaEntity {
