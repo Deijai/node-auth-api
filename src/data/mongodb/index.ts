@@ -10,3 +10,5 @@ export * from './models/pessoa.model';
 export * from './models/tenant.model';
 export * from './models/unidade.model';
 export * from './models/usuario.model';
+export * from './models/especialidade.model';
+export * from './models/medicamento.model';
