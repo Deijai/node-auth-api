@@ -15,11 +15,11 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
     constructor(
         private readonly hashPassword: (password: string) => string = BcryptAdapter.hash,
         private readonly comparePassword: (password: string, hash: string) => boolean = BcryptAdapter.compare
-    ) {}
+    ) { }
 
     async criar(criarUsuarioDto: CriarUsuarioDto, tenantId: string, userId: string): Promise<UsuarioEntity> {
         console.log('criarUsuarioDto: ', criarUsuarioDto);
-        
+
         try {
             // Definir permissões padrão baseadas no papel
             const permissoesPadrao = this.obterPermissoesPorPapel(criarUsuarioDto.papel);
@@ -41,7 +41,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
             return UsuarioMapper.usuarioEntityFromObjectSemSenha(usuarioPopulado!);
         } catch (error: any) {
             console.log('error ===> ', error);
-            
+
             if (error.code === 11000) {
                 if (error.keyPattern.usuario) {
                     throw CustomError.badRequest('Nome de usuário já existe neste município');
@@ -56,7 +56,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
             const usuario = await UsuarioModel.findOne({ _id: id, tenant_id: tenantId })
                 .populate('pessoa_id')
                 .populate('unidades_acesso', 'nome tipo');
-            
+
             if (!usuario) return null;
             return UsuarioMapper.usuarioEntityFromObjectSemSenha(usuario);
         } catch (error) {
@@ -68,7 +68,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
         try {
             const usuarioDoc = await UsuarioModel.findOne({ usuario, tenant_id: tenantId })
                 .populate('pessoa_id');
-            
+
             if (!usuarioDoc) return null;
             return UsuarioMapper.usuarioEntityFromObject(usuarioDoc); // Com senha para validação
         } catch (error) {
@@ -80,7 +80,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
         try {
             const usuario = await UsuarioModel.findOne({ pessoa_id: pessoaId, tenant_id: tenantId })
                 .populate('pessoa_id');
-            
+
             if (!usuario) return null;
             return UsuarioMapper.usuarioEntityFromObjectSemSenha(usuario);
         } catch (error) {
@@ -91,12 +91,8 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
     async buscar(buscarUsuarioDto: BuscarUsuarioDto, tenantId: string): Promise<BuscarUsuarioResult> {
         try {
             const { page, limit, search, papel, ativo, unidade_id } = buscarUsuarioDto;
-            
-            const query: any = { tenant_id: tenantId };
-
-            // Pipeline de agregação
             const pipeline: any[] = [
-                { $match: query },
+                { $match: { tenant_id: tenantId } },
                 {
                     $lookup: {
                         from: 'pessoas',
@@ -104,35 +100,15 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
                         foreignField: '_id',
                         as: 'pessoa'
                     }
+                },
+                { $unwind: { path: '$pessoa', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        senha: 0 // remove o campo senha
+                    }
                 }
             ];
 
-            // Filtros adicionais
-            const matchStage: any = {};
-
-            if (search) {
-                matchStage.$or = [
-                    { 'usuario': { $regex: search, $options: 'i' } },
-                    { 'pessoa.nome': { $regex: search, $options: 'i' } }
-                ];
-            }
-
-            if (papel) matchStage.papel = papel;
-            if (ativo !== undefined) matchStage.ativo = ativo;
-            if (unidade_id) matchStage.unidades_acesso = unidade_id;
-
-            if (Object.keys(matchStage).length > 0) {
-                pipeline.push({ $match: matchStage });
-            }
-
-            // Remover senha do resultado
-            pipeline.push({
-                $project: {
-                    senha: 0 // Excluir senha
-                }
-            });
-
-            // Paginação
             const [usuarios, totalResult] = await Promise.all([
                 UsuarioModel.aggregate([
                     ...pipeline,
@@ -142,7 +118,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
                 ]),
                 UsuarioModel.aggregate([
                     ...pipeline,
-                    { $count: "total" }
+                    { $count: 'total' }
                 ])
             ]);
 
@@ -165,9 +141,9 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
 
     async login(loginUsuarioDto: LoginUsuarioDto, tenantId: string): Promise<UsuarioEntity> {
         try {
-            const usuario = await UsuarioModel.findOne({ 
-                usuario: loginUsuarioDto.usuario, 
-                tenant_id: tenantId 
+            const usuario = await UsuarioModel.findOne({
+                usuario: loginUsuarioDto.usuario,
+                tenant_id: tenantId
             }).populate('pessoa_id');
 
             if (!usuario) {
@@ -197,6 +173,9 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
             if (atualizarUsuarioDto.senha) {
                 updateData.senha = this.hashPassword(atualizarUsuarioDto.senha);
             }
+
+            console.log('updateData: ', updateData);
+            
 
             const usuario = await UsuarioModel.findOneAndUpdate(
                 { _id: id, tenant_id: tenantId },
@@ -231,7 +210,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
             // Atualizar senha
             const result = await UsuarioModel.updateOne(
                 { _id: id, tenant_id: tenantId },
-                { 
+                {
                     senha: this.hashPassword(alterarSenhaDto.nova_senha),
                     updated_at: new Date()
                 }
@@ -251,7 +230,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
 
             const result = await UsuarioModel.updateOne(
                 { _id: id, tenant_id: tenantId },
-                { 
+                {
                     bloqueado_ate: bloqueadoAte,
                     updated_at: new Date()
                 }
@@ -267,7 +246,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
         try {
             const result = await UsuarioModel.updateOne(
                 { _id: id, tenant_id: tenantId },
-                { 
+                {
                     $unset: { bloqueado_ate: 1 },
                     tentativas_login: 0,
                     updated_at: new Date()
@@ -284,7 +263,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
         try {
             const result = await UsuarioModel.updateOne(
                 { _id: id, tenant_id: tenantId },
-                { 
+                {
                     ultimo_acesso: new Date(),
                     updated_at: new Date()
                 }
@@ -300,7 +279,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
         try {
             const usuario = await UsuarioModel.findOneAndUpdate(
                 { _id: id, tenant_id: tenantId },
-                { 
+                {
                     $inc: { tentativas_login: 1 },
                     updated_at: new Date()
                 },
@@ -317,7 +296,7 @@ export class UsuarioDatasourceImpl implements UsuarioDatasource {
         try {
             const result = await UsuarioModel.updateOne(
                 { _id: id, tenant_id: tenantId },
-                { 
+                {
                     tentativas_login: 0,
                     updated_at: new Date()
                 }

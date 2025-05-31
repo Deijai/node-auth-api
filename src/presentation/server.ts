@@ -1,5 +1,5 @@
-import { log } from 'console';
 import express, { Router } from 'express'
+import cors from 'cors'
 
 interface Options {
     port?: number,
@@ -18,7 +18,7 @@ export class Server {
     }
 
     async start() {
-
+        this.app.use(cors());
         this.app.use(express.json());
 
         this.app.use(this.routes);       

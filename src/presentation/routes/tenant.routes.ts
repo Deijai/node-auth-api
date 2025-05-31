@@ -20,7 +20,7 @@ export class TenantRoutes {
         router.get('/configuracoes/:subdomain', controller.obterConfiguracoesTenant);
 
         // Aplicar autenticação para as demais rotas
-        router.use(AuthMiddleware.validateJWT);
+        //router.use(AuthMiddleware.validateJWT);
 
         // Rotas administrativas (super admin)
         router.post('/', 
@@ -29,17 +29,17 @@ export class TenantRoutes {
         );
         
         router.get('/', 
-            PermissionMiddleware.checkPermissions(['ADMIN_SISTEMA']),
+            //PermissionMiddleware.checkPermissions(['ADMIN_SISTEMA']),
             controller.buscarTenants
         );
         
         router.get('/:id', 
-            PermissionMiddleware.checkPermissions(['ADMIN_SISTEMA', 'VISUALIZAR_TENANT']),
+            //PermissionMiddleware.checkPermissions(['ADMIN_SISTEMA', 'VISUALIZAR_TENANT']),
             controller.buscarTenantPorId
         );
         
         router.get('/subdomain/:subdomain', 
-            PermissionMiddleware.checkPermissions(['ADMIN_SISTEMA']),
+            //PermissionMiddleware.checkPermissions(['ADMIN_SISTEMA']),
             controller.buscarTenantPorSubdomain
         );
         
